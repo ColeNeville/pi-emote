@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import type { Config, EmoteMapping, TerminalMapping } from "./types.js";
+import { DEFAULT_WIDGET_THEME, sanitizeWidgetTheme } from "./theme.js";
 
 export interface ConfigResult {
   config: Config;
@@ -54,6 +55,7 @@ const DEFAULTS: Config = {
     { match: "ghostty", render: "kitty" },
     { match: "warpterminal", render: "kitty" },
   ],
+  theme: { ...DEFAULT_WIDGET_THEME },
 };
 
 /**
@@ -117,6 +119,9 @@ export function loadLayeredConfig(extDir: string, cwd: string): ConfigResult {
     userConfig?.terminals,
     projectConfig?.terminals,
   );
+
+  // "theme" — deep-merged above, then validated: warn + fall back to defaults
+  merged.theme = sanitizeWidgetTheme(merged.theme);
 
   // Track which terminal match keys were explicitly set by user or project config
   const userConfiguredTerminals = new Set<string>();
